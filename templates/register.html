@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Ro'yxatdan o'tish - TOP IJARA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-card);
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-decor">
+    <div class="bg-decor-circle-1"></div>
+    <div class="bg-decor-circle-2"></div>
+  </div>
+
+  <div class="auth-container">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <a href="/" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
+        <div class="logo-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"
+            viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg></div>
+        <span style="font-weight: 800; font-size: 1.2rem;">TOP <span class="highlight">IJARA</span></span>
+      </a>
+    </div>
+    <h3 style="text-align: center; margin-bottom: 20px;">Ro'yxatdan O'tish</h3>
+    <form id="pageRegisterForm">
+      <div class="form-group">
+        <label>Yangi Login</label>
+        <input type="text" id="regUsername" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label>Yangi Parol</label>
+        <input type="password" id="regPassword" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Tasdiqlash</button>
+      <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+        <span style="color: var(--text-muted);">Akkauntingiz bormi?</span>
+        <a href="{% url 'login_page' %}" style="color: var(--primary);">Kirish</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('pageRegisterForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Kutilmoqda...';
+
+      try {
+        const res = await fetch('/api/auth/register/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('regUsername').value,
+            password: document.getElementById('regPassword').value
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const urlParams = new URLSearchParams(window.location.search);
+          let nextUrl = urlParams.get('next');
+          if (!nextUrl && document.referrer && !document.referrer.includes('/login') && !document.referrer.includes('/register')) {
+            nextUrl = document.referrer;
+          }
+          window.location.href = nextUrl || '/';
+        } else {
+          alert(data.error || 'Xatolik yuz berdi');
+          btn.disabled = false;
+          btn.textContent = 'Tasdiqlash';
+        }
+      } catch (err) {
+        alert('Server xatosi');
+        btn.disabled = false;
+        btn.textContent = 'Tasdiqlash';
+      }
+    });
+  </script>
+</body>
+
+</html>

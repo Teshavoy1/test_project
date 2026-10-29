@@ -1,0 +1,526 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOP IJARA - Universal Ijara Platformasi & Admin Panel</title>
+  <meta name="description" content="O'zbekistonda avtomobillar, ko'chmas mulk va zamonaviy gadjetlarni ishonchli va arzon ijaraga olish tizimi.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+  <!-- Decorative Ambient Glow Background -->
+  <div class="bg-decor">
+    <div class="bg-decor-circle-1"></div>
+    <div class="bg-decor-circle-2"></div>
+  </div>
+
+  <!-- Main Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo" onclick="toggleAdminView(false)">
+        <div class="logo-icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+        </div>
+        <span>TOP <span class="highlight">IJARA</span></span>
+        <span class="brand-badge">Universal</span>
+      </a>
+
+      <div class="nav-actions">
+        <!-- Currency switch -->
+        <button id="currencyToggleBtn" class="btn btn-secondary btn-sm" title="Valyutani o'zgartirish">
+          UZS
+        </button>
+
+        <!-- Theme toggle -->
+        <button id="themeToggleBtn" class="btn btn-icon-only" title="Mavzuni almashtirish">
+          ☀️
+        </button>
+
+        <!-- Favorites button with count -->
+        <div class="fav-badge-wrap">
+          <button id="favNavBtn" class="btn btn-icon-only" title="Sevimlilar">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+          <span id="favCountBadge" class="fav-count-badge" style="display: none;">0</span>
+        </div>
+
+        <!-- User Auth Actions -->
+        <div id="guestActions" style="display: flex; gap: 8px;">
+          <a href="{% url 'login_page' %}" id="loginBtn" class="btn btn-secondary" style="text-decoration:none;">Kirish</a>
+          <a href="{% url 'register_page' %}" id="registerBtn" class="btn btn-primary" style="text-decoration:none;">Ro'yxatdan o'tish</a>
+        </div>
+
+        <div id="userActions" style="display: none; align-items: center; gap: 8px;">
+          <button id="myAdsBtn" class="btn btn-secondary" onclick="showMyAds()">
+            <span>Mening E'lonlarim</span>
+          </button>
+          <button id="postAdBtn" class="btn btn-primary" onclick="openAddListingModal()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>E'lon berish</span>
+          </button>
+          <button id="logoutBtn" class="btn btn-icon-only" title="Chiqish" onclick="authLogout()" style="color: #f43f5e;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       CLIENT VIEW (Default)
+       ========================================== -->
+  <div id="clientViewContainer">
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="heroSection">
+      <div class="container">
+        <div class="hero-pretitle">
+          <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Rasmiy Premium Ijara Servisi
+        </div>
+        <h1 class="hero-title">
+          Eksklyuziv Avtomobillar, <br><span class="gradient-text">Hashamatli Mulk va Texnika</span> Ijarasi
+        </h1>
+        <p class="hero-subtitle">
+          Biznes hamkorlar, nufuzli tadbirlar va shaxsiy talablar uchun O'zbekiston bo'ylab kafolatlangan yuqori darajadagi boshqaruv va ijara platformasi.
+        </p>
+
+        <!-- Trust Metrics Strip -->
+        <div class="trust-strip">
+          <div class="trust-stat-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span><strong>100%</strong> Rasmiy shartnoma kafolati</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-stat-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            <span><strong>15 daqiqa</strong> Ichida tasdiqlash</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-stat-item">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--primary);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span><strong>99.8%</strong> Mijozlar qoniqishi</span>
+          </div>
+        </div>
+
+        <!-- Smart Search Box -->
+        <div class="search-widget">
+          <div class="search-field">
+            <label for="mainSearchInput">Qidiruv kalit so'zi</label>
+            <div class="search-input-wrap">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="mainSearchInput" placeholder="Masalan: BYD Champion, Malibu 2, Pentxaus...">
+            </div>
+          </div>
+
+          <div class="search-divider"></div>
+
+          <div class="search-field">
+            <label for="mainCitySelect">Hudud / Lokatsiya</label>
+            <div class="search-input-wrap">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <select id="mainCitySelect">
+                <option value="all">Barcha hududlar</option>
+                <option value="Toshkent">Toshkent shahri</option>
+                <option value="Toshkent viloyati">Toshkent viloyati (Tog' kurortlari)</option>
+                <option value="Samarqand">Samarqand</option>
+                <option value="Buxoro">Buxoro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="search-divider"></div>
+
+          <div class="search-field">
+            <label>Narx (dan - gacha)</label>
+            <div class="search-input-wrap" style="display: flex; gap: 5px;">
+              <input type="number" id="filterPriceMin" placeholder="Dan" style="width: 50%; padding: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-main); border-radius: 4px;">
+              <input type="number" id="filterPriceMax" placeholder="Gacha" style="width: 50%; padding: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-main); border-radius: 4px;">
+            </div>
+          </div>
+
+          <div class="search-divider"></div>
+
+          <div class="search-field">
+            <label for="filterRooms">Xonalar</label>
+            <div class="search-input-wrap">
+              <input type="number" id="filterRooms" placeholder="Xonalar soni" style="width: 100%; padding: 4px; border: 1px solid var(--border-subtle); background: var(--bg-card); color: var(--text-main); border-radius: 4px;">
+            </div>
+          </div>
+
+          <div class="search-divider"></div>
+
+          <div class="search-field">
+            <label for="sortSelect">Saralash tartibi</label>
+            <div class="search-input-wrap">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
+              <select id="sortSelect">
+                <option value="popular">Tavsiya etilgan (Eksklyuziv)</option>
+                <option value="price-asc">Narx: Pastdan yuqoriga</option>
+                <option value="price-desc">Narx: Yuqoridan pastga</option>
+                <option value="rating">Mijozlar reytingi bo'yicha</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="resetFiltersBtn" class="btn btn-secondary" title="Tozalash">
+            Tozalash
+          </button>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="categories-bar" id="categoriesBar"></div>
+      </div>
+    </section>
+
+    <!-- Catalog Section -->
+    <section class="catalog-section">
+      <div class="container">
+        <div class="catalog-header">
+          <div class="catalog-title-area">
+            <h2>Mavjud Ijara Takliflari</h2>
+            <p id="resultsCountBadge">Yuklanmoqda...</p>
+          </div>
+        </div>
+
+        <!-- Items Grid -->
+        <div class="items-grid" id="itemsGrid"></div>
+
+        <!-- Pagination -->
+        <div class="pagination-container" id="paginationContainer" style="margin-top: 30px; display: flex; justify-content: center; gap: 8px;">
+        </div>
+      </div>
+    </section>
+
+    <!-- Features & Trust Section -->
+    <section class="features-section">
+      <div class="container">
+        <div class="features-grid">
+          <div class="feature-box">
+            <div class="feature-icon-wrap">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h4>100% Xavfsiz va Kafolatlangan</h4>
+            <p>Barcha e'lon egalari tekshiriladi, shartnoma va kafolat hujjatlari taqdim etiladi.</p>
+          </div>
+
+          <div class="feature-box">
+            <div class="feature-icon-wrap">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            </div>
+            <h4>Tezkor Rasmiylashtirish</h4>
+            <p>Ortiqcha qog'ozbozliksiz 5 daqiqada onlayn ariza yuboring va ijaraga ega bo'ling.</p>
+          </div>
+
+          <div class="feature-box">
+            <div class="feature-icon-wrap">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+            </div>
+            <h4>Qulay To'lov Usullari</h4>
+            <p>Payme, Click, Uzum yoki joyida naqd to'lov orqali depozit va ijara hisob-kitobi.</p>
+          </div>
+
+          <div class="feature-box">
+            <div class="feature-icon-wrap">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <h4>24/7 Mijozlarni Qo'llab-quvvatlash</h4>
+            <p>Har qanday savol yoki yordam uchun professional operatorlarimiz xizmatingizda.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <div class="brand-logo" style="margin-bottom: 14px;">
+              <div class="logo-icon">✨</div>
+              <span>TOP <span class="highlight">IJARA</span></span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 320px;">
+              O'zbekistondagi avtomobil, mulk va qimmatbaho texnikalarni ijaraga berish va olish bo'yicha eng ishonchli portal.
+            </p>
+          </div>
+          <div class="footer-col">
+            <h5>Ijaralar</h5>
+            <ul>
+              <li><a href="javascript:void(0)" onclick="filterByCategory('auto')">Avtomobillar ijarasi</a></li>
+              <li><a href="javascript:void(0)" onclick="filterByCategory('realty')">Dachalar va Kvartiralar</a></li>
+              <li><a href="javascript:void(0)" onclick="filterByCategory('tech')">Texnika & PS5</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h5>Mijozlar uchun</h5>
+            <ul>
+              <li><a href="javascript:void(0)" onclick="openAddListingModal()">E'lon joylashtirish</a></li>
+              <li><a href="javascript:void(0)" onclick="showFavoritesModal()">Saqlanganlar</a></li>
+              <li><a href="javascript:void(0)">Ijara shartnomasi</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h5>Aloqa</h5>
+            <ul>
+              <li><span style="color: var(--text-muted);">📞 +998 (71) 200-00-99</span></li>
+              <li><span style="color: var(--text-muted);">📍 Toshkent sh., Chilonzor</span></li>
+              <li><span style="color: var(--primary);">telegram: @top_ijara_bot</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div>© 2026 TOP IJARA. Barcha huquqlar himoyalangan.</div>
+          <div>
+            <a href="javascript:void(0)" id="secretAdminFooterBtn" style="color: var(--text-dim); text-decoration: none; font-size: 0.78rem; opacity: 0.45; display: inline-flex; align-items: center; gap: 4px;" title="Xodimlar va boshqaruv">
+              <span>🔒 Xodimlar kirishi</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==========================================
+       ADMIN PANEL VIEW (Full Screen Switch)
+       ========================================== -->
+  <div id="adminPanelContainer">
+    <div class="admin-layout">
+      <!-- Admin Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-menu">
+          <div style="padding: 10px 14px 20px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 14px;">
+            <div style="font-weight: 800; font-size: 1.15rem; color: var(--text-main);">TOP IJARA ADMIN</div>
+            <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">Super Administrator</div>
+          </div>
+
+          <button class="admin-nav-item active" data-tab="dashboard">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Boshqaruv (Dashboard)</span>
+          </button>
+
+          <button class="admin-nav-item" data-tab="listings">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>E'lonlar (CRUD)</span>
+          </button>
+
+          <button class="admin-nav-item" data-tab="bookings">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Buyurtmalar & Cheklar</span>
+          </button>
+
+          <button class="admin-nav-item" data-tab="settings">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span>Sozlamalar & Zaxira</span>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <a href="/admin/" target="_blank" class="btn btn-secondary" style="width: 100%; text-decoration: none; justify-content: center; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
+            <span>🐍 Django Native Admin</span>
+          </a>
+          <button id="exitAdminBtn" class="btn btn-secondary" style="width: 100%;">
+            <span>← Saytga Qaytish</span>
+          </button>
+          <button id="adminLogoutBtn" class="btn btn-secondary" style="width: 100%; border-color: rgba(244, 63, 94, 0.35); color: #f43f5e;" onclick="adminLogout()">
+            <span>🚪 Tizimdan Chiqish</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Admin Dynamic Content -->
+      <main class="admin-main">
+        <div id="adminTabContent"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       BOOKING MODAL (Ijara Rasmiylashtirish)
+       ========================================== -->
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="bookingModalTitle">Ijara Buyurtmasini Rasmiylashtirish</h3>
+        <button class="close-modal-btn" onclick="closeModal('bookingModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Item Overview Header -->
+        <div style="display: flex; gap: 16px; align-items: center; background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--border-subtle);">
+          <img id="bookingItemImg" src="" style="width: 80px; height: 60px; border-radius: var(--radius-sm); object-fit: cover;">
+          <div>
+            <h4 id="bookingItemTitle" style="font-size: 1.05rem; margin-bottom: 4px;"></h4>
+            <span id="bookingItemPriceTag" style="font-weight: 700; color: var(--primary);"></span>
+          </div>
+        </div>
+
+        <form id="bookingForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bookStartDate">Ijara Boshlanish Sanasi *</label>
+              <input type="date" id="bookStartDate" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bookEndDate">Qaytarish Sanasi *</label>
+              <input type="date" id="bookEndDate" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bookClientName">F.I.O (To'liq ismingiz) *</label>
+              <input type="text" id="bookClientName" class="form-control" placeholder="Masalan: Sardor Umarov" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bookClientPhone">Telefon Raqamingiz *</label>
+              <input type="tel" id="bookClientPhone" class="form-control" placeholder="+998 90 123 45 67" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bookClientPassport">Pasport / ID Karta Seriyasi</label>
+              <input type="text" id="bookClientPassport" class="form-control" placeholder="AA 1234567">
+            </div>
+
+            <div class="form-group">
+              <label>To'lov Usuli</label>
+              <div class="payment-methods-grid">
+                <label class="payment-radio-label">
+                  <input type="radio" name="paymentMethod" value="Payme" checked>
+                  <span>Payme</span>
+                </label>
+                <label class="payment-radio-label">
+                  <input type="radio" name="paymentMethod" value="Click">
+                  <span>Click</span>
+                </label>
+                <label class="payment-radio-label">
+                  <input type="radio" name="paymentMethod" value="Uzum">
+                  <span>Uzum</span>
+                </label>
+                <label class="payment-radio-label">
+                  <input type="radio" name="paymentMethod" value="Naqd">
+                  <span>Naqd</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="bookClientNote">Qo'shimcha istaklar yoki izoh</label>
+              <textarea id="bookClientNote" class="form-control" rows="2" placeholder="Masalan: Mashinani aeroportga olib kelish yoki qo'shimcha xizmatlar"></textarea>
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="bookPromoCode">Promokod (Chegirma uchun)</label>
+              <div class="promo-input-group">
+                <input type="text" id="bookPromoCode" class="form-control" placeholder="Masalan: TOP10, BARAKA, IJARA20">
+                <button type="button" class="btn btn-secondary" onclick="applyPromoCodeIndex()" style="white-space:nowrap; padding: 0 16px;">Qo'llash</button>
+              </div>
+              <div id="promoFeedbackIndex"></div>
+            </div>
+          </div>
+
+          <!-- Dynamic Price Calculator Summary Box -->
+          <div class="calc-summary-box">
+            <div class="calc-row">
+              <span>Ijara muddati:</span>
+              <strong id="calcDaysCount">1 kun</strong>
+            </div>
+            <div class="calc-row">
+              <span>Asl ijara summasi:</span>
+              <strong id="calcRentSum">0 so'm</strong>
+            </div>
+            <div class="calc-row" id="calcDiscountRowIndex" style="display: none; color: #10b981;">
+              <span>Chegirma (<span id="calcDiscountTagIndex">0%</span>):</span>
+              <strong id="calcDiscountValIndex">-0 so'm</strong>
+            </div>
+            <div class="calc-row">
+              <span>Kafolat depoziti (qaytariladi):</span>
+              <strong id="calcDepositSum">0 so'm</strong>
+            </div>
+            <div class="calc-row total-row">
+              <span>Jami To'lov:</span>
+              <span id="calcGrandTotal">0 so'm</span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('bookingModal')">Bekor qilish</button>
+            <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">
+              <span>Buyurtmani Tasdiqlash</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       GENERIC MODAL (Quick View, Receipts, Forms)
+       ========================================== -->
+  <div class="modal-backdrop" id="genericModal">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="genericModalTitle"></h3>
+        <button class="close-modal-btn" onclick="closeGenericModal()">✕</button>
+      </div>
+      <div class="modal-body" id="genericModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 id="authModalTitle">Kirish</h3>
+        <button class="close-modal-btn" onclick="closeModal('authModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+          <input type="hidden" id="authMode" value="login">
+          <div class="form-group">
+            <label>Login</label>
+            <input type="text" id="authUsername" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Parol</label>
+            <input type="password" id="authPassword" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;" id="authSubmitBtn">Kirish</button>
+          <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+            <a href="javascript:void(0)" id="authToggleLink" onclick="toggleAuthMode()" style="color: var(--primary);">Ro'yxatdan o'tish</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Scripts -->
+  <script src="{% static 'js/data.js' %}?v=5"></script>
+  <script src="{% static 'js/admin.js' %}?v=5"></script>
+  <script src="{% static 'js/app.js' %}?v=5"></script>
+</body>
+</html>
