@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/auth/login/', views.auth_login, name='api_auth_login'),
     path('api/auth/register/', views.auth_register, name='api_auth_register'),
     path('api/auth/logout/', views.auth_logout, name='api_auth_logout'),
+    path('api/auth/google/', views.auth_google, name='api_auth_google'),
     path('api/auth/me/', views.auth_me, name='api_auth_me'),
 
     path('api/items/', views.get_items, name='api_items'),

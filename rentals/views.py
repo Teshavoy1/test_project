@@ -1,10 +1,13 @@
 import json
+import urllib.request
+import urllib.parse
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, Sum, Count
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.core.paginator import Paginator
+from django.conf import settings as django_settings
 from datetime import datetime
 from .models import Category, RentalItem, Booking, Comment
 from .seed import seed_database
@@ -19,10 +22,12 @@ def index_view(request):
     return render(request, 'index.html')
 
 def login_page(request):
-    return render(request, 'login.html')
+    google_client_id = getattr(django_settings, 'GOOGLE_CLIENT_ID', '')
+    return render(request, 'login.html', {'GOOGLE_CLIENT_ID': google_client_id})
 
 def register_page(request):
-    return render(request, 'register.html')
+    google_client_id = getattr(django_settings, 'GOOGLE_CLIENT_ID', '')
+    return render(request, 'register.html', {'GOOGLE_CLIENT_ID': google_client_id})
 
 def item_detail_page(request, item_id):
     return render(request, 'item_detail.html', {'item_id': item_id})
@@ -254,6 +259,73 @@ def auth_register(request):
 def auth_logout(request):
     logout(request)
     return JsonResponse({'success': True})
+
+
+@csrf_exempt
+def auth_google(request):
+    """
+    Google Identity Services (GSI) credential (JWT ID token) ni qabul qilib,
+    foydalanuvchini tizimga kiritadi yoki yangi akkaunt ochadi.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        credential = data.get('credential', '').strip()
+        if not credential:
+            return JsonResponse({'error': 'Google token topilmadi'}, status=400)
+
+        # Google tokeninfo endpoint orqali token tekshiruvi
+        url = f'https://oauth2.googleapis.com/tokeninfo?id_token={urllib.parse.quote(credential)}'
+        req = urllib.request.Request(url, headers={'Accept': 'application/json'})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            payload = json.loads(resp.read().decode())
+
+        # Client ID tekshiruvi (agar GOOGLE_CLIENT_ID sozlangan bo'lsa)
+        client_id = getattr(django_settings, 'GOOGLE_CLIENT_ID', '')
+        if client_id and payload.get('aud') != client_id:
+            return JsonResponse({'error': 'Google Client ID mos kelmadi'}, status=400)
+
+        email = payload.get('email', '')
+        name = payload.get('name', '')
+        google_sub = payload.get('sub', '')  # unique Google user ID
+
+        if not email:
+            return JsonResponse({'error': 'Google akkauntdan email olinmadi'}, status=400)
+
+        # Email yoki google_sub orqali mavjud foydalanuvchini topamiz
+        username_candidate = email.split('@')[0].replace('.', '_').replace('-', '_')[:30]
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            # Yangi foydalanuvchi yaratamiz
+            # username band bo'lsa raqam qo'shamiz
+            base_uname = username_candidate
+            uname = base_uname
+            counter = 1
+            while User.objects.filter(username=uname).exists():
+                uname = f'{base_uname}{counter}'
+                counter += 1
+
+            user = User.objects.create_user(
+                username=uname,
+                email=email,
+                password=None,  # parolsiz (faqat Google orqali kiradi)
+            )
+            if name:
+                parts = name.split(' ', 1)
+                user.first_name = parts[0]
+                user.last_name = parts[1] if len(parts) > 1 else ''
+                user.save()
+
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return JsonResponse({'success': True, 'user': {'username': user.username, 'email': user.email}})
+
+    except urllib.error.HTTPError as e:
+        return JsonResponse({'error': f'Google token noto\'g\'ri yoki muddati o\'tgan: {e.code}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 def auth_me(request):
     if request.user.is_authenticated:
@@ -580,6 +652,8 @@ def import_json(request):
                     daily_price=b.get('dailyPrice', 0),
                     total_price=b.get('totalPrice', 0),
                     deposit=b.get('deposit', 0),
+                    discount_amount=b.get('discountAmount', 0),
+                    promo_code=b.get('promoCode', ''),
                     payment_method=b.get('paymentMethod', 'Payme'),
                     status=b.get('status', 'kutilmoqda'),
                     note=b.get('note', '')

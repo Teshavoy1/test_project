@@ -129,7 +129,13 @@ class Booking(models.Model):
     def save(self, *args, **kwargs):
         if not self.booking_id:
             import random
-            self.booking_id = f"ORD-{random.randint(1000, 9999)}"
+            for _ in range(10):
+                candidate = f"ORD-{random.randint(1000, 9999)}"
+                if not Booking.objects.filter(booking_id=candidate).exists():
+                    self.booking_id = candidate
+                    break
+            if not self.booking_id:
+                self.booking_id = f"ORD-{uuid.uuid4().hex[:6].upper()}"
         if self.item:
             if not self.item_title:
                 self.item_title = self.item.title
